@@ -1,0 +1,17 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Visit {
+    id        Int      @id @default(autoincrement())
+    visitorId String
+    pageUrl   String
+    timestamp DateTime @default(now())
+    // TODO - add indexes after knowing the exact requirements
+}
