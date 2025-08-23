@@ -4,8 +4,8 @@ import { TrackingController } from './tracking.controller';
 import { DatabaseModule } from '../database/database.module';
 
 @Module({
-  providers: [TrackingService],
-  controllers: [TrackingController],
-  imports: [DatabaseModule],
+    providers: [TrackingService],
+    controllers: [TrackingController],
+    imports: [DatabaseModule],
 })
 export class TrackingModule {}

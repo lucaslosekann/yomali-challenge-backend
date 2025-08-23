@@ -5,68 +5,68 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 
 describe('TrackingController (e2e)', () => {
-  let app: INestApplication<App>;
+    let app: INestApplication<App>;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    beforeEach(async () => {
+        const moduleFixture: TestingModule = await Test.createTestingModule({
+            imports: [AppModule],
+        }).compile();
 
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
-    await app.init();
-  });
+        app = moduleFixture.createNestApplication();
+        app.useGlobalPipes(new ValidationPipe());
+        await app.init();
+    });
 
-  it('/tracking (POST)', async () => {
-    const payload = {
-      pageUrl: 'http://example.com',
-      visitorId: '123e4567-e89b-12d3-a456-426614174000',
-    };
-    const response = await request(app.getHttpServer())
-      .post('/tracking')
-      .send(payload)
-      .expect(201);
+    it('/tracking (POST)', async () => {
+        const payload = {
+            pageUrl: 'http://example.com',
+            visitorId: '123e4567-e89b-12d3-a456-426614174000',
+        };
+        const response = await request(app.getHttpServer())
+            .post('/tracking')
+            .send(payload)
+            .expect(201);
 
-    const body = response.body as {
-      pageUrl: string;
-      visitorId: string;
-    };
+        const body = response.body as {
+            pageUrl: string;
+            visitorId: string;
+        };
 
-    expect(body.pageUrl).toBe(payload.pageUrl);
-    expect(body.visitorId).toBe(payload.visitorId);
-  });
+        expect(body.pageUrl).toBe(payload.pageUrl);
+        expect(body.visitorId).toBe(payload.visitorId);
+    });
 
-  it('/tracking (POST) invalid pageUrl', async () => {
-    const payload = {
-      pageUrl: 'example',
-      visitorId: '123e4567-e89b-12d3-a456-426614174000',
-    };
-    const response = await request(app.getHttpServer())
-      .post('/tracking')
-      .send(payload)
-      .expect(400);
+    it('/tracking (POST) invalid pageUrl', async () => {
+        const payload = {
+            pageUrl: 'example',
+            visitorId: '123e4567-e89b-12d3-a456-426614174000',
+        };
+        const response = await request(app.getHttpServer())
+            .post('/tracking')
+            .send(payload)
+            .expect(400);
 
-    const body = response.body as {
-      message: string[];
-    };
+        const body = response.body as {
+            message: string[];
+        };
 
-    expect(body.message).toStrictEqual(['pageUrl must be a URL address']);
-  });
+        expect(body.message).toStrictEqual(['pageUrl must be a URL address']);
+    });
 
-  it('/tracking (POST) invalid visitorId', async () => {
-    const payload = {
-      pageUrl: 'http://example.com',
-      visitorId: '123e4567-e89b-12d356-426614174000',
-    };
-    const response = await request(app.getHttpServer())
-      .post('/tracking')
-      .send(payload)
-      .expect(400);
+    it('/tracking (POST) invalid visitorId', async () => {
+        const payload = {
+            pageUrl: 'http://example.com',
+            visitorId: '123e4567-e89b-12d356-426614174000',
+        };
+        const response = await request(app.getHttpServer())
+            .post('/tracking')
+            .send(payload)
+            .expect(400);
 
-    const body = response.body as {
-      message: string[];
-    };
+        const body = response.body as {
+            message: string[];
+        };
 
-    expect(body.message).toStrictEqual(['visitorId must be a UUID']);
-  });
+        expect(body.message).toStrictEqual(['visitorId must be a UUID']);
+    });
 });

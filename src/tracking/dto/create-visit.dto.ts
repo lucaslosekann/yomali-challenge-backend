@@ -1,9 +1,9 @@
 import { IsUrl, IsUUID } from 'class-validator';
 
 export class CreateVisitDto {
-  @IsUrl()
-  pageUrl: string;
+    @IsUrl()
+    pageUrl: string;
 
-  @IsUUID()
-  visitorId: string;
+    @IsUUID()
+    visitorId: string;
 }

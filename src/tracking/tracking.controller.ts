@@ -4,10 +4,10 @@ import { CreateVisitDto } from './dto/create-visit.dto';
 
 @Controller('tracking')
 export class TrackingController {
-  constructor(private readonly trackingService: TrackingService) {}
+    constructor(private readonly trackingService: TrackingService) {}
 
-  @Post()
-  create(@Body() event: CreateVisitDto) {
-    return this.trackingService.trackVisit(event);
-  }
+    @Post()
+    create(@Body() event: CreateVisitDto) {
+        return this.trackingService.trackVisit(event);
+    }
 }

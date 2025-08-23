@@ -13,5 +13,8 @@ model Visit {
     visitorId String
     pageUrl   String
     timestamp DateTime @default(now())
-    // TODO - add indexes after knowing the exact requirements
+
+    @@index([timestamp])
+    @@index([timestamp, pageUrl])
+    @@index([timestamp, visitorId])
 }
