@@ -3,14 +3,15 @@ import { TrackingService } from './tracking.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('tracking')
 export class TrackingController {
     constructor(private readonly trackingService: TrackingService) {}
 
+    @ApiBody({ type: CreateVisitDto })
     @Post()
     async create(@Body() body: unknown) {
-        console.log(body);
         //JSON
         if (typeof body === 'string') {
             try {
