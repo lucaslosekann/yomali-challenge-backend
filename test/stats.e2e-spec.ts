@@ -36,7 +36,8 @@ describe('StatsController (e2e)', () => {
             .get('/stats')
             .query({
                 dateRange: 'custom',
-                customRange: [start.toISOString(), end.toISOString()],
+                startDate: start.toISOString(),
+                endDate: end.toISOString(),
             })
             .expect(200);
 
@@ -67,10 +68,8 @@ describe('StatsController (e2e)', () => {
         };
 
         expect(body.message).toStrictEqual([
-            'each value in customRange must be a Date instance',
-            'customRange must contain no more than 2 elements',
-            'customRange must contain at least 2 elements',
-            'customRange must be an array',
+            'startDate must be a valid ISO 8601 date string',
+            'endDate must be a valid ISO 8601 date string',
         ]);
     });
 });

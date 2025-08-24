@@ -28,7 +28,8 @@ describe('StatsService', () => {
         const end = new Date();
         await service.getStats({
             dateRange: 'custom',
-            customRange: [start, end],
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
         });
     });
 

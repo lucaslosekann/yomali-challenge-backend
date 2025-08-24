@@ -6,7 +6,8 @@ import { Prisma } from '../../generated/prisma';
 type GetStatsArgs = {
     url?: string;
     dateRange: '24h' | '7d' | '30d' | 'custom';
-    customRange?: [Date, Date];
+    startDate?: string;
+    endDate?: string;
 };
 
 @Injectable()
@@ -23,16 +24,20 @@ export class StatsService {
             startDate = DateTime.now().minus({ days: 7 });
         } else if (args.dateRange === '30d') {
             startDate = DateTime.now().minus({ days: 30 });
-        } else if (args.dateRange === 'custom' && args.customRange) {
-            startDate = DateTime.fromJSDate(args.customRange[0]);
-            endDate = DateTime.fromJSDate(args.customRange[1]);
+        } else if (
+            args.dateRange === 'custom' &&
+            args.startDate &&
+            args.endDate
+        ) {
+            startDate = DateTime.fromISO(args.startDate);
+            endDate = DateTime.fromISO(args.endDate);
         } else {
             throw new Error('Invalid date range');
         }
 
-        //total unique visits
-        // unique visits per day
-        // unique visits per page
+        const pageUrlWhere = args.url
+            ? Prisma.sql`AND pageUrl LIKE ${'%' + args.url + '%'}`
+            : Prisma.sql``;
 
         const statsPerDayPromise = this.prisma.$queryRaw`
             SELECT
@@ -41,7 +46,7 @@ export class StatsService {
                 DATE(timestamp) AS day
             FROM Visit
             WHERE timestamp BETWEEN ${startDate} AND ${endDate}
-                ${args.url ? Prisma.sql`AND pageUrl = ${args.url}` : Prisma.sql``}
+                ${pageUrlWhere}
             GROUP BY DATE(timestamp) WITH ROLLUP
             ORDER BY day;
         `;
@@ -53,9 +58,10 @@ export class StatsService {
                 COUNT(DISTINCT visitorId) AS unique_visits
             FROM Visit
             WHERE timestamp BETWEEN ${startDate} AND ${endDate}
-                ${args.url ? Prisma.sql`AND pageUrl = ${args.url}` : Prisma.sql``}
+                ${pageUrlWhere}
             GROUP BY pageUrl
-            ORDER BY unique_visits DESC;
+            ORDER BY unique_visits DESC
+            LIMIT 10;
         `;
 
         const [statsPerDay, statsPerPage] = await Promise.all([

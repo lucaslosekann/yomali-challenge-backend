@@ -30,7 +30,8 @@ describe('StatsController', () => {
         const end = new Date();
         await controller.getStats({
             dateRange: 'custom',
-            customRange: [start, end],
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
         });
     });
 
