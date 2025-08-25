@@ -18,8 +18,13 @@ export class StatsService {
         let startDate: DateTime;
         let endDate: DateTime = DateTime.now();
 
+        let hourly = args.dateRange === '24h';
+
+        let groupBy = Prisma.sql`DATE(timestamp)`;
+
         if (args.dateRange === '24h') {
             startDate = DateTime.now().minus({ hours: 24 });
+            groupBy = Prisma.sql`DATE_FORMAT(timestamp, '%Y-%m-%dT%H:00:00Z')`;
         } else if (args.dateRange === '7d') {
             startDate = DateTime.now().minus({ days: 7 });
         } else if (args.dateRange === '30d') {
@@ -31,24 +36,36 @@ export class StatsService {
         ) {
             startDate = DateTime.fromISO(args.startDate);
             endDate = DateTime.fromISO(args.endDate);
+
+            if (endDate.diff(startDate, 'days').days < 2) {
+                groupBy = Prisma.sql`DATE_FORMAT(timestamp, '%Y-%m-%dT%H:00:00Z')`;
+                hourly = true;
+            }
         } else {
             throw new Error('Invalid date range');
         }
+
+        startDate = startDate.toUTC();
+        endDate = endDate.toUTC();
 
         const pageUrlWhere = args.url
             ? Prisma.sql`AND pageUrl LIKE ${'%' + args.url + '%'}`
             : Prisma.sql``;
 
+        const dateWhere = startDate.equals(endDate)
+            ? Prisma.sql`WHERE DATE(timestamp) = ${startDate.toFormat('yyyy-MM-dd')}`
+            : Prisma.sql`WHERE timestamp BETWEEN ${startDate} AND ${endDate}`;
+
         const statsPerDayPromise = this.prisma.$queryRaw`
             SELECT
                 COUNT(*) AS total_visits,
                 COUNT(DISTINCT visitorId) AS total_unique,
-                DATE(timestamp) AS day
+                ${groupBy} AS bucket
             FROM Visit
-            WHERE timestamp BETWEEN ${startDate} AND ${endDate}
-                ${pageUrlWhere}
-            GROUP BY DATE(timestamp) WITH ROLLUP
-            ORDER BY day;
+            ${dateWhere}
+            ${pageUrlWhere}
+            GROUP BY bucket WITH ROLLUP
+            ORDER BY bucket;
         `;
 
         const statsPerPagePromise = this.prisma.$queryRaw`
@@ -57,8 +74,8 @@ export class StatsService {
                 COUNT(*) AS total_visits,
                 COUNT(DISTINCT visitorId) AS unique_visits
             FROM Visit
-            WHERE timestamp BETWEEN ${startDate} AND ${endDate}
-                ${pageUrlWhere}
+            ${dateWhere}
+            ${pageUrlWhere}
             GROUP BY pageUrl
             ORDER BY unique_visits DESC
             LIMIT 10;
@@ -72,6 +89,7 @@ export class StatsService {
         return {
             statsPerDay,
             statsPerPage,
+            hourly,
         };
     }
 }
