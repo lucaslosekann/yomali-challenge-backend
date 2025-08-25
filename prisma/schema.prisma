@@ -8,13 +8,25 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Visit {
+//TODO: add indexes accordingly to most common queries
+
+model Session {
+    id        Int        @id @default(autoincrement())
+    visitorId String // random UUID stored in cookie
+    ip        String
+    userAgent String
+    browser   String?
+    os        String?
+    referrer  String?
+    startTime DateTime   @default(now())
+    endTime   DateTime? // updated as long as the user is active
+    PageView  PageView[]
+}
+
+model PageView {
     id        Int      @id @default(autoincrement())
-    visitorId String
+    sessionId Int
+    session   Session  @relation(fields: [sessionId], references: [id])
     pageUrl   String
     timestamp DateTime @default(now())
-
-    @@index([timestamp])
-    @@index([timestamp, pageUrl])
-    @@index([timestamp, visitorId])
 }
