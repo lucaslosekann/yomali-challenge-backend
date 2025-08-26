@@ -35,7 +35,6 @@ flowchart TD
         JS["Tracking Snippet JS"]
   end
  subgraph Server["Tracking Server (Nest.js)"]
-        API["/tracking & /ping endpoints"]
   end
  subgraph DB["Database"]
         S[("Session Table")]
@@ -46,7 +45,7 @@ flowchart TD
   end
     Browser -- POST /tracking (on page load) --> Server
     Browser -- "POST /ping (on action - 5min debounce)" --> Server
-    Server --> DB & DB & Analytics
+    Server --> DB & Analytics
     Analytics -- Fetch analytics --> Server
 
 ```
