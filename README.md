@@ -76,8 +76,36 @@ erDiagram
 
 ```
 
+## Database Optimization
 
----
+To ensure fast and efficient queries, a set of indexes were created on the most frequently queried columns:
+
+### PageView table
+
+- @@index([endTime, startTime]) → speeds up queries that calculate session duration and time-based filters.
+
+- @@index([visitorId, endTime, startTime]) → improves lookups of visits per user within a time range.
+
+- @@index([os, endTime, startTime]) → optimizes “top OS” queries filtered by date.
+
+- @@index([browser, endTime, startTime]) → optimizes “top browser” queries filtered by date.
+
+- @@index([referrer, endTime, startTime]) → optimizes “top referrer” queries filtered by date.
+
+### Session table
+
+- @@index([timestamp]) → accelerates time range queries.
+
+- @@index([pageUrl]) → improves filtering and grouping by page URL.
+
+- @@index([sessionId]) → speeds up joins with the Session table and unique session counts.
+
+- @@index([pageUrl, timestamp]) → composite index that optimizes queries filtering by both URL and date simultaneously.
+
+In addition to indexing, an alternative for large-scale deployments would be table partitioning by date (e.g., monthly partitions for PageView). This would make time range queries even faster by only scanning relevant partitions.
+
+
+
 
 ## Getting Started
 

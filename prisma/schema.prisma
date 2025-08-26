@@ -19,8 +19,14 @@ model Session {
     os        String?
     referrer  String?
     startTime DateTime   @default(now())
-    endTime   DateTime? // updated as long as the user is active
+    endTime   DateTime // updated as long as the user is active
     PageView  PageView[]
+
+    @@index([endTime, startTime])
+    @@index([visitorId, endTime, startTime])
+    @@index([os, endTime, startTime])
+    @@index([browser, endTime, startTime])
+    @@index([referrer, endTime, startTime])
 }
 
 model PageView {
@@ -29,4 +35,9 @@ model PageView {
     session   Session  @relation(fields: [sessionId], references: [id])
     pageUrl   String
     timestamp DateTime @default(now())
+
+    @@index([timestamp])
+    @@index([pageUrl])
+    @@index([sessionId])
+    @@index([pageUrl, timestamp])
 }
