@@ -12,7 +12,6 @@ export class StatsController {
 
     @Get()
     async getStats(@Query() filters: GetStatsDto) {
-        console.log('Fetching stats with filters:', filters);
         const data = await this.statsService.getStats(filters);
         const json = JSON.stringify(data, (key, value: unknown) =>
             typeof value === 'bigint'
