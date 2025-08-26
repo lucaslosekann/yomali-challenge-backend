@@ -180,3 +180,8 @@ The application uses the following environment variables (set in a `.env` file o
 - This project is part of a technical assessment for Yomali.
 - The backend is open (no authentication) for simplicity in the assessment context.
 - The main focus is clean architecture, testability, and data collection for analytics.
+
+
+## Related Repositories
+- [Frontend (React Analytics Dashboard)](https://github.com/lucaslosekann/yomali-challenge-frontend/)
+- [Tracking Snippet (JavaScript)](https://github.com/lucaslosekann/yomali-challenge-snippet/)
