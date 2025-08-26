@@ -20,7 +20,7 @@ function buildBrowserOSString({
 export class TrackingService {
     constructor(private prisma: PrismaService) {}
 
-    async trackVisit(visit: VisitDto, ip: string, userAgent?: string) {
+    trackVisit(visit: VisitDto, ip: string, userAgent?: string) {
         const now = DateTime.now().toJSDate();
 
         const parser = new UAParser(userAgent);
@@ -47,13 +47,10 @@ export class TrackingService {
         });
     }
 
-    async updateSessionAndAddPageView(sessionId: number, pageUrl: string) {
+    updateSessionAndAddPageView(sessionId: number, pageUrl: string) {
         const now = DateTime.now().toJSDate();
         return this.prisma.$transaction([
-            this.prisma.session.update({
-                where: { id: sessionId },
-                data: { endTime: now },
-            }),
+            this.updateSession(sessionId, now),
             this.prisma.pageView.create({
                 data: {
                     pageUrl,
@@ -62,6 +59,14 @@ export class TrackingService {
                 },
             }),
         ]);
+    }
+
+    updateSession(sessionId: number, newEndTime?: Date) {
+        const now = DateTime.now().toJSDate();
+        return this.prisma.session.update({
+            where: { id: sessionId },
+            data: { endTime: newEndTime ?? now },
+        });
     }
 
     getActiveSession(visitorId: string) {

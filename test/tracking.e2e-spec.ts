@@ -21,6 +21,7 @@ describe('TrackingController (e2e)', () => {
         const payload = {
             pageUrl: 'http://example.com',
             visitorId: '123e4567-e89b-12d3-a456-426614174000',
+            metadata: { referrer: 'http://referrer.com' },
         };
         const response = await request(app.getHttpServer())
             .post('/tracking')
@@ -28,18 +29,17 @@ describe('TrackingController (e2e)', () => {
             .expect(201);
 
         const body = response.body as {
-            pageUrl: string;
-            visitorId: string;
+            message: string;
         };
 
-        expect(body.pageUrl).toBe(payload.pageUrl);
-        expect(body.visitorId).toBe(payload.visitorId);
+        expect(body.message).toBe('Page view added to existing session');
     });
 
     it('/tracking (POST) invalid pageUrl', async () => {
         const payload = {
-            pageUrl: 'example',
+            pageUrl: '//example',
             visitorId: '123e4567-e89b-12d3-a456-426614174000',
+            metadata: { referrer: 'http://referrer.com' },
         };
         const response = await request(app.getHttpServer())
             .post('/tracking')
@@ -57,6 +57,7 @@ describe('TrackingController (e2e)', () => {
         const payload = {
             pageUrl: 'http://example.com',
             visitorId: '123e4567-e89b-12d356-426614174000',
+            metadata: { referrer: 'http://referrer.com' },
         };
         const response = await request(app.getHttpServer())
             .post('/tracking')

@@ -1,3 +1,4 @@
+import { GetSessionsDto } from './dto/get-sessions.dto';
 import { GetStatsDto } from './dto/get-stats.dto';
 import { StatsService } from './stats.service';
 import { Controller, Get, Query } from '@nestjs/common';
@@ -15,5 +16,11 @@ export class StatsController {
                 : value,
         );
         return json;
+    }
+
+    @Get('sessions')
+    async getSessionsByPageUrl(@Query() filters: GetSessionsDto) {
+        const data = await this.statsService.getSessionsByPageUrl(filters);
+        return data;
     }
 }

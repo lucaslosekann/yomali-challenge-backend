@@ -1,98 +1,155 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Yomali Tracking Assessment - Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a **backend service** built with [NestJS](https://nestjs.com/) and [Prisma](https://www.prisma.io/).  
+It is responsible for collecting and serving **analytics data** from user sessions and page views.  
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The backend exposes endpoints used by a client-side tracking snippet (`/tracking` and `/ping`) and provides aggregated data for a React-based analytics dashboard.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+- **NestJS Framework** – Modular and scalable backend.
+- **Prisma ORM** – Type-safe database access and migrations.
+- **Swagger Integration** – Interactive API documentation.
+- **Dockerized** – Easy deployment and environment consistency.
+- **Testing** – Includes unit tests and end-to-end (e2e) tests.
 
-```bash
-$ npm install
+---
+
+## Architecture Overview
+
+- A **browser snippet** sends data to the backend:
+  - `POST /tracking` → triggered on page load.
+  - `POST /ping` → triggered on user actions (with a 5-minute delay between pings).
+- The backend stores session and page view data in a relational database via **Prisma**.
+- Data can be queried by a **React analytics dashboard** for reporting and visualization.
+
+```mermaid
+---
+config:
+  layout: dagre
+---
+flowchart TD
+ subgraph Browser["User's Browser"]
+        JS["Tracking Snippet JS"]
+  end
+ subgraph Server["Tracking Server (Nest.js)"]
+        API["/tracking & /ping endpoints"]
+  end
+ subgraph DB["Database"]
+        S[("Session Table")]
+        PV[("PageView Table")]
+  end
+ subgraph Analytics["Analytics App (React)"]
+        Dashboard["Dashboard UI"]
+  end
+    Browser -- POST /tracking (on page load) --> Server
+    Browser -- "POST /ping (on action - 5min debounce)" --> Server
+    Server --> DB & DB & Analytics
+    Analytics -- Fetch analytics --> Server
+
+```
+## Database Schema
+
+```mermaid
+erDiagram
+    Session {
+        int id PK
+        varchar(191) visitorId
+        varchar(191) ip
+        varchar(191) userAgent
+        varchar(191) browser
+        varchar(191) os
+        varchar(191) referrer
+        datetime startTime
+        datetime endTime
+    }
+
+    PageView {
+        int id PK
+        int sessionId FK
+        varchar(191) pageUrl
+        datetime timestamp
+    }
+
+    Session ||--|{ PageView : "has one or more"
+
 ```
 
-## Compile and run the project
+
+---
+
+## Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (>= 18.x recommended)
+- [Docker](https://www.docker.com/) (for containerized setup)
+- [Prisma CLI](https://www.prisma.io/docs/getting-started)
+
+### Installation
+Clone the repository and install dependencies:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/lucaslosekann/yomali-challenge-backend.git
+cd yomali-challenge-backend
+npm install
 ```
 
-## Run tests
-
+### Database Setup
+1. Run Prisma migrations to set up the database schema:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+npx prisma migrate dev
+   ```
+2. (Optional) Open Prisma Studio to inspect data:
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma studio
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Running the Application
+Start the development server:
+```bash
+npm run start:dev
+```
+The server will be running at `http://localhost:3000`.
+(or the port specified in the $PORT environment variable).
 
-## Resources
+### Docker
+Build and run with Docker:
+```bash
+docker build -t yomali-backend .
+docker run -p 3000:3000 yomali-backend
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### API Documentation
+Access the Swagger API documentation at: `http://localhost:3000/api`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Testing
+Run unit and e2e tests:
+```bash
+npm run test
+npm run test:e2e
+```
 
-## Support
+### Environment Variables
+The application uses the following environment variables (set in a `.env` file or your deployment environment):
+- `DATABASE_URL` – Database connection string.
+- `PORT` – Port for the server to listen on (default: 3000).
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+### Tech Stack
+- **Backend Framework**: [NestJS](https://nestjs.com/)
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Database**: [MySQL](https://www.mysql.com/)
+- **API Documentation**: [Swagger](https://swagger.io/)
+- **Testing**: [Jest](https://jestjs.io/)
+- **Containerization**: [Docker](https://www.docker.com/)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Notes
+- This project is part of a technical assessment for Yomali.
+- The backend is open (no authentication) for simplicity in the assessment context.
+- The main focus is clean architecture, testability, and data collection for analytics.
