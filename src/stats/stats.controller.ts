@@ -1,14 +1,18 @@
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { GetSessionsDto } from './dto/get-sessions.dto';
 import { GetStatsDto } from './dto/get-stats.dto';
 import { StatsService } from './stats.service';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseInterceptors } from '@nestjs/common';
 
 @Controller('stats')
+@UseInterceptors(CacheInterceptor)
+@CacheTTL(5 * 60 * 1000) // Cache for 5 minutes
 export class StatsController {
     constructor(private readonly statsService: StatsService) {}
 
     @Get()
     async getStats(@Query() filters: GetStatsDto) {
+        console.log('Fetching stats with filters:', filters);
         const data = await this.statsService.getStats(filters);
         const json = JSON.stringify(data, (key, value: unknown) =>
             typeof value === 'bigint'

@@ -11,6 +11,7 @@ The backend exposes endpoints used by a client-side tracking snippet (`/tracking
 
 - **NestJS Framework** – Modular and scalable backend.
 - **Prisma ORM** – Type-safe database access and migrations.
+- **Caching with Redis** – Analytics data is cached for 5 minutes to reduce database load and improve performance.
 - **Swagger Integration** – Interactive API documentation.
 - **Dockerized** – Easy deployment and environment consistency.
 - **Testing** – Includes unit tests and end-to-end (e2e) tests.
@@ -36,6 +37,9 @@ flowchart TD
   end
  subgraph Server["Tracking Server (Nest.js)"]
   end
+ subgraph Cache["Cache Layer (Redis)"]
+        R[("Redis Cache (5 min TTL)")]
+  end
  subgraph DB["Database"]
         S[("Session Table")]
         PV[("PageView Table")]
@@ -43,10 +47,14 @@ flowchart TD
  subgraph Analytics["Analytics App (React)"]
         Dashboard["Dashboard UI"]
   end
+
     Browser -- POST /tracking (on page load) --> Server
     Browser -- "POST /ping (on action - 5min debounce)" --> Server
-    Server --> DB & Analytics
+    Server --> Cache
+    Cache --> DB
+    Server --> Analytics
     Analytics -- Fetch analytics --> Server
+
 
 ```
 ## Database Schema
@@ -171,6 +179,7 @@ The application uses the following environment variables (set in a `.env` file o
 - **Database**: [MySQL](https://www.mysql.com/)
 - **API Documentation**: [Swagger](https://swagger.io/)
 - **Testing**: [Jest](https://jestjs.io/)
+- **Caching**: [Redis](https://redis.io/) 
 - **Containerization**: [Docker](https://www.docker.com/)
 
 ---
