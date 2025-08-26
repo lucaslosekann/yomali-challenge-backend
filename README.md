@@ -38,7 +38,7 @@ flowchart TD
  subgraph Server["Tracking Server (Nest.js)"]
   end
  subgraph Cache["Cache Layer (Redis)"]
-        R[("Redis Cache (2 min TTL)")]
+        R[("Redis Cache (5 min TTL)")]
   end
  subgraph DB["Database"]
         S[("Session Table")]
@@ -49,7 +49,7 @@ flowchart TD
   end
 
     Browser -- POST /tracking (on page load) --> Server
-    Browser -- "POST /tracking/ping (on action - 5min debounce)" --> Server
+    Browser -- "POST /tracking/ping (on action - 2min debounce)" --> Server
     Server --> Cache
     Cache --> DB
     Server --> Analytics
