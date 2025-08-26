@@ -127,11 +127,13 @@ export class StatsService {
                 },
             ]
         >`
-            SELECT
-                AVG(TIMESTAMPDIFF(SECOND, s.startTime, COALESCE(s.endTime, NOW()))) AS avgSessionDuration,
-                SUM(CASE WHEN TIMESTAMPDIFF(SECOND, s.startTime, COALESCE(s.endTime, NOW())) < 60 THEN 1 ELSE 0 END) / COUNT(*) * 100 AS shortVisitPercentage
-            FROM Session s
-            ${dateWhereSessions};
+        SELECT
+            AVG(TIMESTAMPDIFF(SECOND, s.startTime, COALESCE(s.endTime, NOW()))) AS avgSessionDuration,
+            SUM(CASE WHEN TIMESTAMPDIFF(SECOND, s.startTime, COALESCE(s.endTime, NOW())) < 60 THEN 1 ELSE 0 END) / COUNT(*) * 100 AS shortVisitPercentage
+        FROM Session s
+        JOIN PageView pv ON pv.sessionId = s.id
+            ${dateWhereSessions}
+            ${pageUrlWhere};
         `;
 
         // Top browser
@@ -143,13 +145,21 @@ export class StatsService {
                 },
             ]
         >`
-            SELECT browser AS name, COUNT(*) * 100 / (SELECT COUNT(*) FROM Session s ${dateWhereSessions}) AS percentage
+        SELECT s.browser AS name, COUNT(*) * 100 / (
+            SELECT COUNT(*) 
             FROM Session s
+            JOIN PageView pv ON pv.sessionId = s.id
+                ${dateWhereSessions}
+                ${pageUrlWhere}
+        ) AS percentage
+        FROM Session s
+        JOIN PageView pv ON pv.sessionId = s.id
             ${dateWhereSessions}
-            AND browser IS NOT NULL
-            GROUP BY browser
-            ORDER BY COUNT(*) DESC
-            LIMIT 1;
+            ${pageUrlWhere}
+            AND s.browser IS NOT NULL
+        GROUP BY s.browser
+        ORDER BY COUNT(*) DESC
+        LIMIT 1;
         `;
 
         // Top OS
@@ -161,13 +171,21 @@ export class StatsService {
                 },
             ]
         >`
-            SELECT os AS name, COUNT(*) * 100 / (SELECT COUNT(*) FROM Session s ${dateWhereSessions}) AS percentage
+        SELECT s.os AS name, COUNT(*) * 100 / (
+            SELECT COUNT(*) 
             FROM Session s
+            JOIN PageView pv ON pv.sessionId = s.id
+                ${dateWhereSessions}
+                ${pageUrlWhere}
+        ) AS percentage
+        FROM Session s
+        JOIN PageView pv ON pv.sessionId = s.id
             ${dateWhereSessions}
-            AND os IS NOT NULL
-            GROUP BY os
-            ORDER BY COUNT(*) DESC
-            LIMIT 1;
+            ${pageUrlWhere}
+            AND s.os IS NOT NULL
+        GROUP BY s.os
+        ORDER BY COUNT(*) DESC
+        LIMIT 1;
         `;
 
         // Top referrer
@@ -179,13 +197,21 @@ export class StatsService {
                 },
             ]
         >`
-            SELECT referrer AS name, COUNT(*) * 100 / (SELECT COUNT(*) FROM Session s ${dateWhereSessions}) AS percentage
+        SELECT s.referrer AS name, COUNT(*) * 100 / (
+            SELECT COUNT(*) 
             FROM Session s
+            JOIN PageView pv ON pv.sessionId = s.id
+                ${dateWhereSessions}
+                ${pageUrlWhere}
+        ) AS percentage
+        FROM Session s
+        JOIN PageView pv ON pv.sessionId = s.id
             ${dateWhereSessions}
-            AND referrer IS NOT NULL
-            GROUP BY referrer
-            ORDER BY COUNT(*) DESC
-            LIMIT 1;
+            ${pageUrlWhere}
+            AND s.referrer IS NOT NULL
+        GROUP BY s.referrer
+        ORDER BY COUNT(*) DESC
+        LIMIT 1;
         `;
 
         const [
