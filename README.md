@@ -170,6 +170,7 @@ npm run test:e2e
 The application uses the following environment variables (set in a `.env` file or your deployment environment):
 - `DATABASE_URL` – Database connection string.
 - `PORT` – Port for the server to listen on (default: 3000).
+- `REDIS_URL` – Redis connection string for caching.
 
 ---
 

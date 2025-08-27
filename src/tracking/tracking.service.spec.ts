@@ -4,7 +4,7 @@ import { DatabaseModule } from '../database/database.module';
 
 describe('TrackingService', () => {
     let service: TrackingService;
-
+    let sessionId: number;
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [TrackingService],
@@ -35,6 +35,7 @@ describe('TrackingService', () => {
         expect(result).toHaveProperty('visitorId', visitData.visitorId);
         expect(result).toHaveProperty('browser', 'Firefox 139.0');
         expect(result).toHaveProperty('os', expect.stringContaining('Linux'));
+        sessionId = result.id;
     });
 
     it('should handle database errors gracefully', async () => {
@@ -65,11 +66,11 @@ describe('TrackingService', () => {
             },
         };
         const session = await service.updateSessionAndAddPageView(
-            1,
+            sessionId,
             visitData.pageUrl,
         );
         expect(session).toBeInstanceOf(Array); // Because of the transaction
-        expect(session[0]).toHaveProperty('id', 1);
+        expect(session[0]).toHaveProperty('id', sessionId);
         expect(session[1]).toHaveProperty('pageUrl', visitData.pageUrl);
     });
 
